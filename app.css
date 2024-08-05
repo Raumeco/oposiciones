@@ -1,4 +1,32 @@
-* {
-    
-    font-family: 'Mulish', sans-serif;
+.material-icons, .material-icons-outlined {
+    display: block;
+    user-select: none;
+}
+
+.invalid_feedback {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+ul.menu-list {
+    list-style-type: none;
+}
+
+#temas {
+    list-style-type: none;
+}
+
+#temas li {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+ul.menu-list li:not(.legend) {
+    transition: background-color .2s;
+    cursor: pointer;
+}
+
+ul.menu-list li:not(.legend):hover {
+    background-color: rgb(227, 227, 227);
 }

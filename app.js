@@ -1,7 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.4.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.4.0/firebase-firestore.js";
-
-console.log("Si va");
+import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.4.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAPTTf0XBGT8vgbzrGN3qxR6NHiiMIMZJk",
@@ -11,89 +9,95 @@ const firebaseConfig = {
     messagingSenderId: "891886423451",
     appId: "1:891886423451:web:cebc2fe9e1bcc0d773253e"
 };
-const app = initializeApp(firebaseConfig);
 
+const app = initializeApp(firebaseConfig);
 const db = getFirestore(app)
 
-/* try {
-    const docRef = await addDoc(collection(db, "palabras"), {
-        value: "HOLAAAAAAA"
-    });
-    console.log("Document written with ID: ", docRef.id);
-} catch (e) {
-    console.error("Error adding document: ", e);
-} */
-
-async function getPalabras() {
-    let palabras = [];
-    const querySnapshot = await getDocs(collection(db, "palabras"));
-    querySnapshot.forEach((doc) => {
-        palabras.push({
-            id: doc.id,
-            value: doc.data().value
-        });
-    });
-}
-
-getCategorias()
-getPalabras()
-
-var categorias = []
-
-async function getCategorias() {
-    document.getElementById("selectCategorias").innerHTML = ""
-    const querySnapshot = await getDocs(collection(db, "categorias"));
-    querySnapshot.forEach((doc) => {
-        let nombre = doc.data().value
-        let id = doc.id
-        categorias.push({
-            id: id,
-            value: nombre
-        })
-        document.getElementById("selectCategorias").innerHTML += `<option class="categoriaOption" value="${id}">${nombre}</option>`
-    });
-}
-
-document.getElementById("newCategoria").addEventListener("click", async function(e) {
-    let name = document.getElementById("inputCategoria").value;
-    name = name.toUpperCase();
-    if(name == "") {
-        alert("No dejes vacío el input mongolito")
-        return
+window.createDocument = async function(doc, col) {
+    if(!doc || !col) {        
+        return;
     }
-    try {
-        let found = false;
-        categorias.forEach(element => {
-            if(element.value.toLowerCase() === name.toLowerCase()) {
-                found = true;
-                alert("La categoría ya existe")
-            }
-        });
-
-        if (found) {
-            document.getElementById("inputCategoria").value = ""
-            return
-        };
+    try {        
+        const docRef = await addDoc(collection(db, col), doc);
         
-        const docRef = await addDoc(collection(db, "categorias"), {
-            value: name
-        });
-        
-        
-        categorias.push({
-            id: docRef.id,
-            value: name
-        });
-
-        document.getElementById("selectCategorias").innerHTML += `<option class="categoriaOption" value="${docRef.id}">${name}</option>`
+        doc.id = docRef.id;
+        return doc;
     } catch (e) {
         console.error("Error adding document: ", e);
     }
-    document.getElementById("inputCategoria").value = ""
-});
+}
+
+window.updateDocumentById = async function(id, collection, attributes) {
+    const reference = doc(db, collection, id);
+    await updateDoc(reference, attributes);
+}
+
+window.getDocumentsByNumero = async function(num, col) {
+    let q = query(collection(db, col), where("numero", "==", num));
+    let querySnapshot = await getDocs(q);
+    let results = [];
+    querySnapshot.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        let result = doc.data();
+        result.id = doc.id;
+        results.push(result)
+    });
+    return results;
+}
+
+window.getDocumentsByCollection = async function(col) {
+    let q = query(collection(db, col));
+    let querySnapshot = await getDocs(q);
+    let results = [];
+    querySnapshot.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        let result = doc.data();
+        result.id = doc.id;
+        results.push(result)
+    });
+    return results;
+}
+/* updateDocumentById("2IoiIRGBJ02uqeZjtcKY", "ejercicios", {
+    enunciado: "Enunciado de prueba 3",
+    solucion: "Solución de prueba 3",
+    numero: 3,
+    nuevo: true
+}) */
 
 
-document.getElementById("newPalabra").addEventListener("click", async function(e) {
+/* let tema = {
+    titulo: "Tema 2",
+    ejercicios: [],
+    numero: 2,
+};
+let createdTema = await createDocument(tema, "temas")
+console.log(createdTema); */
+
+/* let ejercicio = {
+    enunciado: "Enunciado de prueba 2",
+    solucion: "Solución de prueba 2",
+    numero: 2,
+    tema: "FJXSxQzqQhg1Q6ilb53M",
+}
+let createdEjercicio = await createDocument(ejercicio, "ejercicios")
+console.log(createdEjercicio); */
+
+/* async function getEjerciciosByTemaId(id) {
+    let q = query(collection(db, "ejercicios"), where("tema", "==", id));
+    let querySnapshot = await getDocs(q);
+    let results = [];
+    querySnapshot.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        let result = doc.data();
+        result.id = doc.id;
+        results.push(result)
+    });
+    return results;
+}
+console.log(await getEjerciciosByTemaId("FJXSxQzqQhg1Q6ilb53M")); */
+
+
+/* document.getElementById("newPalabra").addEventListener("click", async function(e) {
     let name = document.getElementById("inputPalabra").value;
     name = name.toUpperCase();
     if(name == "") {
@@ -117,12 +121,12 @@ document.getElementById("newPalabra").addEventListener("click", async function(e
         console.error("Error adding document: ", e);
     }
     document.getElementById("inputPalabra").value = ""
-});
+}); */
 
 
-async function checkWordExists(categoria, palabra) {
+/* async function checkWordExists(categoria, palabra) {
     const palabrasRef = collection(db, "palabras");
     const q = query(palabrasRef, where("value", "==", palabra), where("categoria", "==", categoria));
     const querySnapshot = await getDocs(q);
     return querySnapshot.empty == false
-}
+} */
